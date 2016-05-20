@@ -1,18 +1,88 @@
 import numpy as np
 from StringIO import StringIO
 import time
+def mapData(mapping,data,averages):
+    '''
+    Takes some input data, a mapping table and row averages and returns a 2d
+    array of data that has been mapped to new values, and any missing values
+    replaced with the average of each element, row wise
+    In:
+    mapping: List of dictionaries corresponding to each row element of data
+    data: 2d List or numpy array of data, with each row being a seperate instance
+    of collected results
+    averages: the average element of each element in a row.
+    Out:
+    data: 2d list of processed data, with all values mapped to new values, and
+    all missing data replaced with averages
+    '''
+    data = list(data)
+    for i in range(len(data)):
+        if data[i] == '?':
+            data[i] = averages[i]
+        if mapping[i] != {}:
+            data[i] = mapping[i][data[i]]
+    return data
 
-def processData(ndtype,relation):
-
-    array = np.genfromtxt('records.txt',dtype=ndtype,delimiter=',')
+def getAverages(data,mapping):
+    '''
+    WORK IN PROGRESS: Continous variables appear to be working, nominal doesn't
+    work fully
+    In:
+    data: 2d list of data, each row represents seperate instance of variables
+    mapping: mapping function from collected data to integers for nominal variables
+    Out:
+    aveData: return a row vector, with each element corresponding to the average results
+    of the entire data for each element. If the variable in data is continious,
+    returns the mean of the data. Else if the variable is nominal, it returns the
+    most occuring element.
+    '''
+    aveData = []
+    x,y = len(data),len(data[0])
+    assert type(x) is int
+    assert type(y) is int
+    assert y == len(mapping)
+    for i in range(y): # for every row element
+        count = 0.0 #used for continous variable
+        aveC = 0 #used for continious variable
+        currentAve = [0 for a in mapping[i]]
+        for j in range(x): # every element i of every instance of data, get average of that column
+            if data[j][i] != '?':
+                if mapping[i] == {}: #means it's continuous variable
+                    aveC += data[j][i]
+                    count += 1.0
+                else: #else it's a nominal variable and counts each instance seperately
+                    assert data[j][i] in mapping[i]
+                    currentAve[mapping[i][data[j][i]]] += 1
+        print "Current Average for element ",i,
+        print currentAve
+        if mapping[i] == {}:
+            aveC = aveC/count
+            aveData.append(aveC)
+        else:
+            index = 0
+            largest = currentAve[0]
+            for k in range(1,len(currentAve)-1):
+                if k > largest:
+                    largest = k
+                    index = k
+            aveData.append(index)
+    return aveData
+def processData(ndtype,tdtype,relation,filename):
+    '''
+    WORK IN PROGRESS
+    '''
+    array = np.genfromtxt(filename,dtype=ndtype,delimiter=',')
     NUM_ATTRIBUTES = len(ndtype)
     processed = np.zeros((NUM_ATTRIBUTES,len(array)),dtype=ndtype)
 
-    i,j = 0,0
-    temp = list(array[0])
-    print temp
-    tdtype = [('a','i2'),('b','f4'),('c','f4'),('d','i2'),('e','i2'),('f','i2'),('g','i2'),('h','f4'),('i','i2')]
-    tdtype += [('j','i2'),('k','f4'),('l','i2'),('m','i2'),('n','f4'),('o','f4'),('p','i2')]
+    proper = True
+    for line in array:
+        temp = list(line)
+        end = len(temp) - 1
+        if temp[end] not in ['+','-'] or end+1 is not NUM_ATTRIBUTES:
+            proper = False
+    assert proper
+
     data = np.zeros((1,16),dtype=tdtype)
     print data.dtype
     i = 0
@@ -21,25 +91,18 @@ def processData(ndtype,relation):
         i+=1
     print data
 
-    # for row in array:
-    #     temp = list(row)
-    #     for char in temp:
-    #         processed[j,i] = char
-    #         j += 1
-    #     j = 0
-    #     i += 1
-    # print processed[0]
-
-    #
-    # print array.dtype
-    # print array[0]
-    # print list(array[0])
-    # for char in list(array[0]):
-    #     print char.dtype
-    # print array.dtype
-
+'''
+NEEDED SETUP: DO NOT REMOVE ----------------------------------------------------
+For clarification look into dtype in numpy: [('Item1 Name','Item1 type')...], used
+for reading in the data from numpy to tell it that each element has a different
+type
+'''
 ndtype  = [('A1','S1'),('A2','f4'),('A3','f4'),('A4','S2'),('A5','S2'),('A6','S2'),('A7','S2'),('A8','f4'),('A9','S1')]
 ndtype += [('A10','S1'),('A11','f4'),('A12','S1'),('A13','S1'),('A14','f4'),('A15','f4'),('A16','S1')]
+
+tdtype = [('a','i2'),('b','f4'),('c','f4'),('d','i2'),('e','i2'),('f','i2'),('g','i2'),('h','f4'),('i','i2')]
+tdtype += [('j','i2'),('k','f4'),('l','i2'),('m','i2'),('n','f4'),('o','f4'),('p','i2')]
+#list of dictionaries mapping[0] corresponds to possible values in data[all][0] etc
 mapping = [{'b':0,'a':1},
            {},
            {},
@@ -55,35 +118,14 @@ mapping = [{'b':0,'a':1},
            {'g':0,'p':1,'s':2},
            {},
            {},
-           {'-':0,'+':1}]
-
+           {'+':0,'-':1}]
+#-------------------------------------------------------------------------------
 array = np.genfromtxt('records.txt',dtype=ndtype,delimiter=',')
 
-work = array[0]
-# print work.dtype
-lWork = list(work)
-# print mapping[0] == {}
-for i in range(len(lWork)):
-    print lWork[i],
-    if mapping[i] != {}:
-        print mapping[i][lWork[i]],
-        lWork[i] = mapping[i][lWork[i]]
-    print
-print lWork
-# print mapping
-
-# listDict = [{'A':2},{'Two':4}]
-# print listDict
-# listDict[0].update({'B':4})
-# print listDict
-# print listDict[0]['A']
-# weightMatrix = np.zeros((3,2)
-# for k in range(3):
-#     weightMatrix[k,0] = ({'A':k})
-#     weightMatrix[k,1] = ({'B':k*k})
-#     print weightMatrix[k]
-
-
-
-
-# processData(ndtype)
+# print array.shape
+temp = []
+temp = [list(line) for line in array]
+for line in temp[0:4]:
+    print line
+ave = getAverages(temp[0:4],mapping)
+print ave
