@@ -25,8 +25,8 @@ def mapData(mapping,data,averages):
 
 def getAverages(data,mapping):
     '''
-    WORK IN PROGRESS: Continous variables appear to be working, nominal doesn't
-    work fully
+    WORK IN PROGRESS: Continous variables appear to be working, nominal needs more
+    testing as not sure if working correctly
     In:
     data: 2d list of data, each row represents seperate instance of variables
     mapping: mapping function from collected data to integers for nominal variables
@@ -55,16 +55,17 @@ def getAverages(data,mapping):
                     currentAve[mapping[i][data[j][i]]] += 1
         print "Current Average for element ",i,
         print currentAve
-        if mapping[i] == {}:
+        if mapping[i] == {}: #if the value was a continoues one, calculate the mean
             aveC = aveC/count
             aveData.append(aveC)
-        else:
-            index = 0
+        else: # If the variable was nominal, take the largest
+            index = currentAve.index(max(currentAve))
             largest = currentAve[0]
-            for k in range(1,len(currentAve)-1):
-                if k > largest:
-                    largest = k
-                    index = k
+
+            # for k in range(1,len(currentAve)-1):
+            #     if currentAve[k] > largest:
+            #         largest = k
+            #         index = k
             aveData.append(index)
     return aveData
 def processData(ndtype,tdtype,relation,filename):
