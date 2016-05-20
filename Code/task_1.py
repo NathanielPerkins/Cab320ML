@@ -1,6 +1,7 @@
 import numpy as np
 from StringIO import StringIO
 import time
+import math
 def mapData(mapping,data,averages):
     '''
     Takes some input data, a mapping table and row averages and returns a 2d
@@ -23,7 +24,7 @@ def mapData(mapping,data,averages):
             data[i] = mapping[i][data[i]]
     return data
 
-def getAverages(data,mapping):
+def getAverages(data,mapping,attribute_type):
     '''
     WORK IN PROGRESS: Continous variables appear to be working, nominal needs more
     testing as not sure if working correctly
@@ -46,29 +47,25 @@ def getAverages(data,mapping):
         aveC = 0 #used for continious variable
         currentAve = [0 for a in mapping[i]]
         for j in range(x): # every element i of every instance of data, get average of that column
-            if data[j][i] != '?':
-                if mapping[i] == {}: #means it's continuous variable
+            if attribute_type[i] == -1: #-1 indicates continuous variable
+                if not math.isnan(data[j][i]):
                     aveC += data[j][i]
                     count += 1.0
-                else: #else it's a nominal variable and counts each instance seperately
+            else: #else it's a nominal value and need to count each instance
+                if data[j][i] != '?':
                     assert data[j][i] in mapping[i]
                     currentAve[mapping[i][data[j][i]]] += 1
-        print "Current Average for element ",i,
-        print currentAve
+
         if mapping[i] == {}: #if the value was a continoues one, calculate the mean
+            assert count > 0
             aveC = aveC/count
             aveData.append(aveC)
         else: # If the variable was nominal, take the largest
             index = currentAve.index(max(currentAve))
             largest = currentAve[0]
-
-            # for k in range(1,len(currentAve)-1):
-            #     if currentAve[k] > largest:
-            #         largest = k
-            #         index = k
             aveData.append(index)
     return aveData
-def processData(ndtype,tdtype,relation,filename):
+def processData(ndtype,tdtype,relation,attribute_type,filename):
     '''
     WORK IN PROGRESS
     '''
@@ -98,11 +95,11 @@ For clarification look into dtype in numpy: [('Item1 Name','Item1 type')...], us
 for reading in the data from numpy to tell it that each element has a different
 type
 '''
-ndtype  = [('A1','S1'),('A2','f4'),('A3','f4'),('A4','S2'),('A5','S2'),('A6','S2'),('A7','S2'),('A8','f4'),('A9','S1')]
-ndtype += [('A10','S1'),('A11','f4'),('A12','S1'),('A13','S1'),('A14','f4'),('A15','f4'),('A16','S1')]
+ndtype  = [('A1','S1'),('A2','f4'),('A3','f4'),('A4','S1'),('A5','S2'),('A6','S2'),('A7','S2'),('A8','f4'),('A9','S1'),
+           ('A10','S1'),('A11','f4'),('A12','S1'),('A13','S1'),('A14','f4'),('A15','f4'),('A16','S1')]
 
-tdtype = [('a','i2'),('b','f4'),('c','f4'),('d','i2'),('e','i2'),('f','i2'),('g','i2'),('h','f4'),('i','i2')]
-tdtype += [('j','i2'),('k','f4'),('l','i2'),('m','i2'),('n','f4'),('o','f4'),('p','i2')]
+tdtype = [('a','i2'),('b','f4'),('c','f4'),('d','i2'),('e','i2'),('f','i2'),('g','i2'),('h','f4'),('i','i2'),
+          ('j','i2'),('k','f4'),('l','i2'),('m','i2'),('n','f4'),('o','f4'),('p','i2')]
 #list of dictionaries mapping[0] corresponds to possible values in data[all][0] etc
 mapping = [{'b':0,'a':1},
            {},
@@ -120,13 +117,29 @@ mapping = [{'b':0,'a':1},
            {},
            {},
            {'+':0,'-':1}]
+#Set up attribute_type vector
+attribute_type = []
+for line in mapping:
+    if line != {}:
+        attribute_type.append(len(line))
+    else:
+        attribute_type.append(-1)
 #-------------------------------------------------------------------------------
 array = np.genfromtxt('records.txt',dtype=ndtype,delimiter=',')
-
 # print array.shape
+# print array.shape
+# print attribute_type
 temp = []
 temp = [list(line) for line in array]
-for line in temp[0:4]:
-    print line
-ave = getAverages(temp[0:4],mapping)
+# for item in temp[206]:
+#     print item,
+#     if item == '?':
+#         print "YES"
+    # try:
+    #     if math.isnan(item):
+    #         print "YES"
+    # except:
+    #     print "FUCK"
+
+ave = getAverages(temp,mapping,attribute_type)
 print ave
