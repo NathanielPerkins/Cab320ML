@@ -46,5 +46,3 @@ assert training.shape == (80,6)
 w = train(training)
 
 xMax = np.amax(x[1:3])
-print xMax
-print xLine
