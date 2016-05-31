@@ -35,6 +35,7 @@ def test_loadData():
             attribute_type.append(len(line))
         else:
             attribute_type.append(-1)
+    #attribute_type = np.array(attribute_type)
     return loadData(filename, ndtype, mapping, attribute_type)
 
 
@@ -120,8 +121,28 @@ def mapData(mapping, data, averages):
 
 
 
-def getKey(mydict,value):
-    return mydict.keys()[mydict.values().index(value)]
+
+def createDataSets(data):
+    '''
+    Shuffles the input data and splits the shuffled data into two arrays
+    of different lengths dependent on the ratio of train data to test data.
+    In:
+    data: 2d list of data, each row represents seperate instance of variables
+    mapping: mapping function from collected data to integers for nominal
+    variables
+    Out:
+    train_data: set of data for training purposes
+    test_data: set of data for testing purposes
+    '''
+    N = len(data)
+    trainDataRatio = 0.8
+
+    trainDataLength = int(round(N*trainDataRatio))
+    
+    np.random.shuffle(data)
+
+    return data[:trainDataLength], data[trainDataLength:]
+    
 
 def getAverages(data, mapping, attribute_type):
     '''
@@ -231,6 +252,7 @@ for line in mapping:
 # print test
 # print mapping[3]['u']
 array = test_loadData()
+train_data, test_data = createDataSets(array)
 # array = np.genfromtxt('records.txt', dtype=ndtype, delimiter=',')
 # print [row[1] for row in fullArray],
 
