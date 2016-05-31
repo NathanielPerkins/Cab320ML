@@ -1,6 +1,6 @@
 import numpy as np
 import math
-
+import csv
 
 def test_loadData():
     filename = 'records.txt'
@@ -35,23 +35,19 @@ def test_loadData():
             attribute_type.append(len(line))
         else:
             attribute_type.append(-1)
-    array = loadData(filename, ndtype, mapping, attribute_type)
-    # print array
+    return loadData(filename, ndtype, mapping, attribute_type)
 
 
 def loadData(filename, ndtype, mapping, attribute_type):
+
     data = np.genfromtxt(filename, dtype=ndtype, delimiter=',')
-    data = listify(data)
+            
+    data = [list(line) for line in data]
+
     averages = getAverages(data, mapping, attribute_type)
-    print averages
-    return mapData(mapping, data[0:20], averages)
 
+    return mapData(mapping, data, averages)
 
-def listify(data):
-    fullArray = []
-    for line in data:
-        fullArray.append(list(line))
-    return fullArray
 
 
 def test_mapData():
@@ -107,34 +103,25 @@ def mapData(mapping, data, averages):
     mapped = []
     count = 0
     for row in data:
-        temp = row
-        # print temp, count
-        print row
         for i in xrange(len(row)):
             try:
-                if np.isnan(temp[i]):
-                    temp[i] = averages[i]
-                    print "Reach np.isnan"
-                if temp[i] == '?':
-                    temp[i] = averages[i]
+                if(np.isnan(row[i])): # continuous (?)
+                    row[i] = averages[i]
             except:
-                if temp[i] == '?':
-                    temp[i] = averages[i]
-            if mapping[i] != {}:
-                try:
-                    temp[i] = mapping[i][temp[i]]
-                except:
-                    print "temp[i] = ", temp[i]
-                    print mapping[i]
-                    print "i = ", i
-                    print temp
-                    print averages
-                    raise
-        print temp
-        mapped.append(temp)
+                if row[i] == '?': # discrete (?)
+                    row[i] = averages[i]
+                    continue # continues through for loop if it was a (?)
+            if(mapping[i]!={}):
+                row[i] = mapping[i][row[i]]
+
+        mapped.append(row)
         count += 1
     return mapped
 
+
+
+def getKey(mydict,value):
+    return mydict.keys()[mydict.values().index(value)]
 
 def getAverages(data, mapping, attribute_type):
     '''
@@ -243,7 +230,8 @@ for line in mapping:
 # print test.shape
 # print test
 # print mapping[3]['u']
-test_loadData()
+array = test_loadData()
 # array = np.genfromtxt('records.txt', dtype=ndtype, delimiter=',')
-# fullArray = listify(array)
 # print [row[1] for row in fullArray],
+
+
