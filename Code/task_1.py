@@ -2,6 +2,94 @@ import numpy as np
 import math
 
 
+def test_loadData():
+    filename = 'records.txt'
+    ndtype = [('A1', 'S1'), ('A2', 'f4'), ('A3', 'f4'), ('A4', 'S1'),
+              ('A5', 'S2'),
+              ('A6', 'S2'), ('A7', 'S2'), ('A8', 'f4'), ('A9', 'S1'),
+              ('A10', 'S1'), ('A11', 'f4'), ('A12', 'S1'), ('A13', 'S1'),
+              ('A14', 'f4'), ('A15', 'f4'), ('A16', 'S1')]
+
+    mapping = [{'b': 0, 'a': 1},
+               {},
+               {},
+               {'u': 0, 'y': 1, 'l': 2, 't': 3},
+               {'g': 0, 'p': 1, 'gg': 2},
+               {'c': 0, 'd': 1, 'cc': 2, 'i': 3, 'j': 4, 'k': 5, 'm': 6,
+                'r': 7,
+                'q': 8, 'w': 9, 'x': 10, 'e': 11, 'aa': 12, 'ff': 13},
+               {'v': 0, 'h': 1, 'bb': 2, 'j': 3, 'n': 4, 'z': 5, 'dd': 6,
+               'ff': 7, 'o': 8},
+               {},
+               {'t': 0, 'f': 1},
+               {'t': 0, 'f': 1},
+               {},
+               {'t': 0, 'f': 1},
+               {'g': 0, 'p': 1, 's': 2},
+               {},
+               {},
+               {'+': 0, '-': 1}]
+    attribute_type = []
+    for line in mapping:
+        if line != {}:
+            attribute_type.append(len(line))
+        else:
+            attribute_type.append(-1)
+    array = loadData(filename, ndtype, mapping, attribute_type)
+    # print array
+
+
+def loadData(filename, ndtype, mapping, attribute_type):
+    data = np.genfromtxt(filename, dtype=ndtype, delimiter=',')
+    data = listify(data)
+    averages = getAverages(data, mapping, attribute_type)
+    print averages
+    return mapData(mapping, data[0:20], averages)
+
+
+def listify(data):
+    fullArray = []
+    for line in data:
+        fullArray.append(list(line))
+    return fullArray
+
+
+def test_mapData():
+    '''
+    Tests the mapData function for accuracy with expected results given a
+    known set of inputs
+    '''
+    # partial mapping partial unknown
+    test1D = [['?', 2, '?', 'zz'], ['a', '?', 4.2, '?']]
+    test1M = [{'b': 0, 'a': 1}, {}, {}, {'zz': 6, 'tz': 17}]
+    test1A = ['b', 13, 6.5, 'tz']
+    test1E = [[0, 2, 6.5, 6], [1, 13, 4.2, 17]]
+    test1R = mapData(test1M, test1D, test1A)
+    # full mapping all unknown
+    test2D = [['?', '?', '?', '?'], ['?', '?', '?', '?']]
+    test2M = [{'b': 0, 'a': 1}, {'b': 0, 'a': -1}, {'b': 73}, {'tz': 17}]
+    test2A = ['b', 'a', 'b', 'tz']
+    test2E = [[0, -1, 73, 17], [0, -1, 73, 17]]
+    test2R = mapData(test2M, test2D, test2A)
+    # No mapping
+    test3D = [[1, 2, 3, 4], [5, 6, 7, 8]]
+    test3M = [{}, {}, {}, {}]
+    test3A = [1, 2, 3, 4]
+    test3E = [[1, 2, 3, 4], [5, 6, 7, 8]]
+    test3R = mapData(test3M, test3D, test3A)
+    # data contains NaN
+    test4D = [[np.nan, 2, 3, np.nan], [5, 6, 7, 8]]
+    test4M = [{}, {}, {}, {}]
+    test4A = [-5, 2, 3, -1]
+    test4E = [[-5, 2, 3, -1], [5, 6, 7, 8]]
+    test4R = mapData(test4M, test4D, test4A)
+
+    print "Test 1: ", test1R == test1E
+    print "Test 2: ", test2R == test2E
+    print "Test 3: ", test3R == test3E
+    print "Test 4: ", test4R == test4E
+
+
 def mapData(mapping, data, averages):
     '''
     Takes some input data, a mapping table and row averages and returns a 2d
@@ -10,19 +98,42 @@ def mapData(mapping, data, averages):
     In:
     mapping: List of dictionaries corresponding to each row element of data
     data: 2d List or numpy array of data, with each row being a seperate
-    instance of collected results
+    instance of collected results. # of rows >= 2
     averages: the average element of each element in a row.
     Out:
     data: 2d list of processed data, with all values mapped to new values, and
     all missing data replaced with averages
     '''
-    data = list(data)
-    for i in range(len(data)):
-        if data[i] == '?':
-            data[i] = averages[i]
-        if mapping[i] != {}:
-            data[i] = mapping[i][data[i]]
-    return data
+    mapped = []
+    count = 0
+    for row in data:
+        temp = row
+        # print temp, count
+        print row
+        for i in xrange(len(row)):
+            try:
+                if np.isnan(temp[i]):
+                    temp[i] = averages[i]
+                    print "Reach np.isnan"
+                if temp[i] == '?':
+                    temp[i] = averages[i]
+            except:
+                if temp[i] == '?':
+                    temp[i] = averages[i]
+            if mapping[i] != {}:
+                try:
+                    temp[i] = mapping[i][temp[i]]
+                except:
+                    print "temp[i] = ", temp[i]
+                    print mapping[i]
+                    print "i = ", i
+                    print temp
+                    print averages
+                    raise
+        print temp
+        mapped.append(temp)
+        count += 1
+    return mapped
 
 
 def getAverages(data, mapping, attribute_type):
@@ -67,7 +178,7 @@ def getAverages(data, mapping, attribute_type):
     return aveData
 
 
-def processData(ndtype, tdtype, relation, attribute_type, filename):
+def processData(ndtype, relation, attribute_type, filename):
     '''
     WORK IN PROGRESS
     '''
@@ -82,14 +193,6 @@ def processData(ndtype, tdtype, relation, attribute_type, filename):
             proper = False
     assert proper
 
-    data = np.zeros((1, 16), dtype=tdtype)
-    print data.dtype
-    i = 0
-    for char in temp:
-        data[i] = char
-        i += 1
-    print data
-
 '''
 NEEDED SETUP: DO NOT REMOVE ---------------------------------------------------
 For clarification look into dtype in numpy: [('Item1 Name','Item1 type')...],
@@ -101,10 +204,6 @@ ndtype = [('A1', 'S1'), ('A2', 'f4'), ('A3', 'f4'), ('A4', 'S1'), ('A5', 'S2'),
           ('A10', 'S1'), ('A11', 'f4'), ('A12', 'S1'), ('A13', 'S1'),
           ('A14', 'f4'), ('A15', 'f4'), ('A16', 'S1')]
 
-tdtype = [('a', 'i2'), ('b', 'f4'), ('c', 'f4'), ('d', 'i2'), ('e', 'i2'),
-          ('f', 'i2'), ('g', 'i2'), ('h', 'f4'), ('i', 'i2'), ('j', 'i2'),
-          ('k', 'f4'), ('l', 'i2'), ('m', 'i2'), ('n', 'f4'), ('o', 'f4'),
-          ('p', 'i2')]
 # list of dictionaries mapping[0] corresponds to possible values in
 # data[all][0] etc
 mapping = [{'b': 0, 'a': 1},
@@ -132,5 +231,19 @@ for line in mapping:
         attribute_type.append(len(line))
     else:
         attribute_type.append(-1)
-# -----------------------------------------------------------------------------
-array = np.genfromtxt('records.txt', dtype=ndtype, delimiter=',')
+# ----------------------------------------------------------------------------
+# test = np.array([np.nan])
+# test2 = np.array(['?'])
+# print np.isnan(test2)
+# print np.isnan(test)
+# test_mapData()
+# data = np.genfromtxt('records.txt', dtype=ndtype, delimiter=',')
+# print data[0]
+# test = np.array(list(data[0]), dtype=ndtype)
+# print test.shape
+# print test
+# print mapping[3]['u']
+test_loadData()
+# array = np.genfromtxt('records.txt', dtype=ndtype, delimiter=',')
+# fullArray = listify(array)
+# print [row[1] for row in fullArray],
