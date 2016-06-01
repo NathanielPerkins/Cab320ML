@@ -2,14 +2,14 @@ import numpy as np
 import math
 import csv
 
+
 def test_loadData():
     filename = 'records.txt'
-    ndtype = [('A1', 'S1'), ('A2', 'f4'), ('A3', 'f4'), ('A4', 'S1'),
+    ndtype = [('A1', 'S1'), ('A2', 'f8'), ('A3', 'f8'), ('A4', 'S1'),
               ('A5', 'S2'),
-              ('A6', 'S2'), ('A7', 'S2'), ('A8', 'f4'), ('A9', 'S1'),
-              ('A10', 'S1'), ('A11', 'f4'), ('A12', 'S1'), ('A13', 'S1'),
-              ('A14', 'f4'), ('A15', 'f4'), ('A16', 'S1')]
-
+              ('A6', 'S2'), ('A7', 'S2'), ('A8', 'f8'), ('A9', 'S1'),
+              ('A10', 'S1'), ('A11', 'f8'), ('A12', 'S1'), ('A13', 'S1'),
+              ('A14', 'f8'), ('A15', 'f8'), ('A16', 'S1')]
     mapping = [{'b': 0, 'a': 1},
                {},
                {},
@@ -35,20 +35,19 @@ def test_loadData():
             attribute_type.append(len(line))
         else:
             attribute_type.append(-1)
-    #attribute_type = np.array(attribute_type)
-    return loadData(filename, ndtype, mapping, attribute_type)
+    # attribute_type = np.array(attribute_type)
+    return np.array(loadData(filename, ndtype, mapping, attribute_type))
 
 
 def loadData(filename, ndtype, mapping, attribute_type):
 
     data = np.genfromtxt(filename, dtype=ndtype, delimiter=',')
-            
+
     data = [list(line) for line in data]
 
     averages = getAverages(data, mapping, attribute_type)
 
     return mapData(mapping, data, averages)
-
 
 
 def test_mapData():
@@ -106,20 +105,18 @@ def mapData(mapping, data, averages):
     for row in data:
         for i in xrange(len(row)):
             try:
-                if(np.isnan(row[i])): # continuous (?)
+                if(np.isnan(row[i])):  # continuous (?)
                     row[i] = averages[i]
             except:
-                if row[i] == '?': # discrete (?)
+                if row[i] == '?':  # discrete (?)
                     row[i] = averages[i]
-                    continue # continues through for loop if it was a (?)
-            if(mapping[i]!={}):
+                    continue  # continues through for loop if it was a (?)
+            if(mapping[i] != {}):
                 row[i] = mapping[i][row[i]]
 
         mapped.append(row)
         count += 1
     return mapped
-
-
 
 
 def createDataSets(data):
@@ -138,11 +135,11 @@ def createDataSets(data):
     trainDataRatio = 0.8
 
     trainDataLength = int(round(N*trainDataRatio))
-    
+
     np.random.shuffle(data)
 
     return data[:trainDataLength], data[trainDataLength:]
-    
+
 
 def getAverages(data, mapping, attribute_type):
     '''
@@ -251,9 +248,8 @@ for line in mapping:
 # print test.shape
 # print test
 # print mapping[3]['u']
+print np.array(attribute_type)
 array = test_loadData()
 train_data, test_data = createDataSets(array)
 # array = np.genfromtxt('records.txt', dtype=ndtype, delimiter=',')
 # print [row[1] for row in fullArray],
-
-
