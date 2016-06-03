@@ -126,7 +126,7 @@ def splitByClass(dataset):
 
 
 if __name__ == "__main__":
-    splitRatio = 0.01
+    splitRatio = 0.8
 
     
     loaded_data = test_loadData()
@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
     accuracy = getAccuracy(test_data, predictions)
 
-    print "\nAccuracy of Classificatino:",accuracy
+    print "\nAccuracy of Classification:",accuracy
     
 ##    mapping = [{}, {'+': 0, '-': 1}] 
 ##    summaries = ({'Length':1, 'Statistics':[{"Mean":1, "StdDev":0.5}]},
