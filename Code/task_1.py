@@ -119,7 +119,7 @@ def mapData(mapping, data, averages):
     return mapped
 
 
-def createDataSets(data):
+def splitDataSets(data,splitRatio):
     '''
     Shuffles the input data and splits the shuffled data into two arrays
     of different lengths dependent on the ratio of train data to test data.
@@ -132,9 +132,8 @@ def createDataSets(data):
     test_data: set of data for testing purposes
     '''
     N = len(data)
-    trainDataRatio = 0.8
 
-    trainDataLength = int(round(N*trainDataRatio))
+    trainDataLength = int(round(N*splitRatio))
 
     np.random.shuffle(data)
 
@@ -237,19 +236,21 @@ for line in mapping:
     else:
         attribute_type.append(-1)
 # ----------------------------------------------------------------------------
-# test = np.array([np.nan])
-# test2 = np.array(['?'])
-# print np.isnan(test2)
-# print np.isnan(test)
-# test_mapData()
-# data = np.genfromtxt('records.txt', dtype=ndtype, delimiter=',')
-# print data[0]
-# test = np.array(list(data[0]), dtype=ndtype)
-# print test.shape
-# print test
-# print mapping[3]['u']
-print np.array(attribute_type)
-array = test_loadData()
-train_data, test_data = createDataSets(array)
-# array = np.genfromtxt('records.txt', dtype=ndtype, delimiter=',')
-# print [row[1] for row in fullArray],
+if __name__ == "__main__":
+    # test = np.array([np.nan])
+    # test2 = np.array(['?'])
+    # print np.isnan(test2)
+    # print np.isnan(test)
+    # test_mapData()
+    # data = np.genfromtxt('records.txt', dtype=ndtype, delimiter=',')
+    # print data[0]
+    # test = np.array(list(data[0]), dtype=ndtype)
+    # print test.shape
+    # print test
+    # print mapping[3]['u']
+    print np.array(attribute_type)
+    array = test_loadData()
+    splitRatio = 0.8
+    train_data, test_data = splitDataSets(array,splitRatio)
+    # array = np.genfromtxt('records.txt', dtype=ndtype, delimiter=',')
+    # print [row[1] for row in fullArray],
