@@ -171,9 +171,10 @@ def splitByClass(dataset):
 
 
 if __name__ == "__main__":
-    splitRatio = 0.5 #  Define the split of training data to testing data
+    splitRatio = 0.8 #  Define the split of training data to testing data
 
-    loaded_data = test_loadData() #  Load data
+    filename, ndtype, mapping, attribute_type = setup_task_1()
+    loaded_data = loadData(filename, ndtype, mapping, attribute_type)
     
     #  Randomise and split into two datasets
     train_data, test_data = splitDataSets(loaded_data,splitRatio)
