@@ -30,7 +30,7 @@ def getProbabilities(test_data, summaries):
               ...
               prob(An_1)...prob(An_numAttributes)]
     '''
-    probabilities = ([],[])
+    probabilities = ([], [])
     for i in range(len(summaries)):
         classSummary = summaries[i]["Statistics"]
         classLength = summaries[i]["Length"]
@@ -38,18 +38,19 @@ def getProbabilities(test_data, summaries):
             testProb = 1
             for j in range(len(classSummary)):
                 if(mapping[j] == {}):  # Continuous
-                   mean = classSummary[j]["Mean"]
-                   std = classSummary[j]["StdDev"]
-                   testProb *= contProbability(row[j],mean,std)
+                    mean = classSummary[j]["Mean"]
+                    std = classSummary[j]["StdDev"]
+                    testProb *= contProbability(row[j], mean, std)
                 else:
-                   testProb *= discreteProbability(row[j],classSummary[j],classLength)
+                    testProb *= discreteProbability(row[j], classSummary[j],
+                                                    classLength)
             probabilities[i].append(testProb)
     return probabilities
 
 
 def makePredictions(test_data, summaries):
     p = getProbabilities(test_data, summaries)
-   
+
     predictions = []
     for i in range(len(p[0])):  # Loop through all probabilities
         bestProbability = -1
@@ -62,23 +63,24 @@ def makePredictions(test_data, summaries):
     return predictions
 
 
-#Straight copy pasted for quick testing
+# Straight copy pasted for quick testing
 def getAccuracy(testSet, predictions):
     correct = 0
     for i in range(len(testSet)):
         if testSet[i][-1] == predictions[i]:
             correct += 1
     return (correct/float(len(testSet))) * 100.0
-    
+
+
 def dataSummary(dataset):
-    summary = {'Length':len(dataset)}
+    summary = {'Length': len(dataset)}
     stats_summary = []
     for i in range(len(mapping)-1):
         if(mapping[i] == {}):  # Continuous
             values = zip(*dataset)[i]
             mean = np.mean(values)
             std = np.std(values)
-            stats_summary.append({"Mean":mean,"StdDev":std})
+            stats_summary.append({"Mean": mean, "StdDev": std})
         else:  # Discrete
             discreteSummary = []
             for j in range(len(mapping[i])):
@@ -87,27 +89,27 @@ def dataSummary(dataset):
 
     summary["Statistics"] = stats_summary
     return summary
-        
+
 
 def classDataSummaries(train_data):
     classData = splitByClass(train_data)
-    print "\nLength of class 0:",len(classData[0])
-    print "Length of class 1:",len(classData[1])
-    return tuple((dataSummary(classData[0]),dataSummary(classData[1])))
+    print "\nLength of class 0:", len(classData[0])
+    print "Length of class 1:", len(classData[1])
+    return tuple((dataSummary(classData[0]), dataSummary(classData[1])))
 
-#Issue with dividing by 0
+
+# Issue with dividing by 0
 def contProbability(X, mean, std):
     '''
     Computes the guassian probability of a continous variable given a mean and
     variance. Returns the probability of value x happening.
     '''
-    exponent = math.exp(-(math.pow(X-mean,2)/(2*math.pow(std,2))))
+    exponent = math.exp(-(math.pow(X-mean, 2)/(2*math.pow(std, 2))))
     return (1 / (math.sqrt(2*math.pi) * std)) * exponent
+
 
 def discreteProbability(X, discreteSummary, length):
     return float(discreteSummary[int(X)])/float(length)
-    
-    
 
 
 def splitByClass(dataset):
@@ -118,38 +120,30 @@ def splitByClass(dataset):
             class0.append(row)
         elif row[-1] == 1:
             class1.append(row)
-    return tuple((class0,class1))
-
-
-
-
+    return tuple((class0, class1))
 
 
 if __name__ == "__main__":
     splitRatio = 0.8
 
-    
     loaded_data = test_loadData()
-    
-    train_data, test_data = splitDataSets(loaded_data,splitRatio)
-    print "Length of Test Data:",len(test_data)
-    print "Length of Train Data:",len(train_data)
-    
+
+    train_data, test_data = splitDataSets(loaded_data, splitRatio)
+    print "Length of Test Data:", len(test_data)
+    print "Length of Train Data:", len(train_data)
+
     summaries = classDataSummaries(train_data)
     predictions = makePredictions(test_data, summaries)
 
     accuracy = getAccuracy(test_data, predictions)
 
-    print "\nAccuracy of Classification:",accuracy
-    
-##    mapping = [{}, {'+': 0, '-': 1}] 
-##    summaries = ({'Length':1, 'Statistics':[{"Mean":1, "StdDev":0.5}]},
-##                 {'Length':1, 'Statistics':[{"Mean":20, "StdDev":5.0}]})
-##    inputVector = [[1.1, '?']]
-    
-##    p = getProbabilities(inputVector, summaries)
-    
-    
+    print "\nAccuracy of Classification:", accuracy
 
+#    mapping = [{}, {'+': 0, '-': 1}]
+#    summaries = ({'Length':1, 'Statistics':[{"Mean":1, "StdDev":0.5}]},
+#                 {'Length':1, 'Statistics':[{"Mean":20, "StdDev":5.0}]})
+#    inputVector = [[1.1, '?']]
 
-    #pass_summary = summarise(pass_data)
+#    p = getProbabilities(inputVector, summaries)
+
+    # pass_summary = summarise(pass_data)
