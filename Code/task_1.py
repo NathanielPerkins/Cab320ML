@@ -246,6 +246,6 @@ def setup_task_1():
 # ----------------------------------------------------------------------------
 if __name__ == "__main__":
     filename, ndtype, mapping, attribute_type = setup_task_1()
-    array = loadData(filename, ndtype, mapping, attribute_type)
+    data = loadData(filename, ndtype, mapping, attribute_type)
     splitRatio = 0.8
-    train_data, test_data = splitDataSets(array, splitRatio)
+    train_data, test_data = splitDataSets(data, splitRatio)
