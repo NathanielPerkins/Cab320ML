@@ -1,6 +1,5 @@
 import numpy as np
 import math
-import csv
 
 
 def test_loadData():
@@ -40,14 +39,14 @@ def test_loadData():
 
 
 def loadData(filename, ndtype, mapping, attribute_type):
-
+    '''
+    Loads in the data, performing all mapping and replacement of missing
+    data. Returns the full array of processed data in numpy form.
+    '''
     data = np.genfromtxt(filename, dtype=ndtype, delimiter=',')
-
     data = [list(line) for line in data]
-
     averages = getAverages(data, mapping, attribute_type)
-
-    return mapData(mapping, data, averages)
+    return np.array(mapData(mapping, data, averages))
 
 
 def test_mapData():
@@ -119,7 +118,7 @@ def mapData(mapping, data, averages):
     return mapped
 
 
-def splitDataSets(data,splitRatio):
+def splitDataSets(data, splitRatio):
     '''
     Shuffles the input data and splits the shuffled data into two arrays
     of different lengths dependent on the ratio of train data to test data.
@@ -182,75 +181,71 @@ def getAverages(data, mapping, attribute_type):
     return aveData
 
 
-def processData(ndtype, relation, attribute_type, filename):
+def setup_task_1():
     '''
-    WORK IN PROGRESS
+    Default Variables  ---------------------------------------------------
+    These are the default variables setup for the specific data set to be
+    imported
     '''
-    array = np.genfromtxt(filename, dtype=ndtype, delimiter=',')
-    NUM_ATTRIBUTES = len(ndtype)
-    # processed = np.zeros((NUM_ATTRIBUTES, len(array)), dtype=ndtype)
-    proper = True
-    for line in array:
-        temp = list(line)
-        end = len(temp) - 1
-        if temp[end] not in ['+', '-'] or end+1 is not NUM_ATTRIBUTES:
-            proper = False
-    assert proper
+    # base filename
+    filename = 'records.txt'
+    '''
+    ndtype determines the importation of the data from text file. A1 to An
+    refer to the variable name. The variable takes the form of a list of
+    ('Ax', 'fx'), where fx refers to the input data type, for example 'S2'
+    refers to 2 character length string.
+    '''
+    ndtype = [('A1', 'S1'), ('A2', 'f4'), ('A3', 'f4'), ('A4', 'S1'),
+              ('A5', 'S2'),
+              ('A6', 'S2'), ('A7', 'S2'), ('A8', 'f4'), ('A9', 'S1'),
+              ('A10', 'S1'), ('A11', 'f4'), ('A12', 'S1'), ('A13', 'S1'),
+              ('A14', 'f4'), ('A15', 'f4'), ('A16', 'S1')]
 
-'''
-NEEDED SETUP: DO NOT REMOVE ---------------------------------------------------
-For clarification look into dtype in numpy: [('Item1 Name','Item1 type')...],
-used for reading in the data from numpy to tell it that each element has a
-different type
-'''
-ndtype = [('A1', 'S1'), ('A2', 'f4'), ('A3', 'f4'), ('A4', 'S1'), ('A5', 'S2'),
-          ('A6', 'S2'), ('A7', 'S2'), ('A8', 'f4'), ('A9', 'S1'),
-          ('A10', 'S1'), ('A11', 'f4'), ('A12', 'S1'), ('A13', 'S1'),
-          ('A14', 'f4'), ('A15', 'f4'), ('A16', 'S1')]
+    '''
+    Mapping is a list of dictionaries. If data to be read is to be changed to a
+    set of different values, such as character->integer, they should be defined
+    in the mapping function. Taking the following form: A1_a, A1_b A2_a, and
+    A2_b are 2 different potential inputs for 2 different features of the
+    dataset. Conversion should start at 0 and increment for every feature.
+    mapping = [{'A1_a': 0, 'A1_b': 1}, {'A2_a': 0, 'A2_b': 1}]
+    '''
+    mapping = [{'b': 0, 'a': 1},
+               {},
+               {},
+               {'u': 0, 'y': 1, 'l': 2, 't': 3},
+               {'g': 0, 'p': 1, 'gg': 2},
+               {'c': 0, 'd': 1, 'cc': 2, 'i': 3, 'j': 4, 'k': 5, 'm': 6,
+               'r': 7, 'q': 8, 'w': 9, 'x': 10, 'e': 11, 'aa': 12, 'ff': 13},
+               {'v': 0, 'h': 1, 'bb': 2, 'j': 3, 'n': 4, 'z': 5, 'dd': 6,
+               'ff': 7, 'o': 8},
+               {},
+               {'t': 0, 'f': 1},
+               {'t': 0, 'f': 1},
+               {},
+               {'t': 0, 'f': 1},
+               {'g': 0, 'p': 1, 's': 2},
+               {},
+               {},
+               {'+': 0, '-': 1}]
 
-# list of dictionaries mapping[0] corresponds to possible values in
-# data[all][0] etc
-mapping = [{'b': 0, 'a': 1},
-           {},
-           {},
-           {'u': 0, 'y': 1, 'l': 2, 't': 3},
-           {'g': 0, 'p': 1, 'gg': 2},
-           {'c': 0, 'd': 1, 'cc': 2, 'i': 3, 'j': 4, 'k': 5, 'm': 6, 'r': 7,
-            'q': 8, 'w': 9, 'x': 10, 'e': 11, 'aa': 12, 'ff': 13},
-           {'v': 0, 'h': 1, 'bb': 2, 'j': 3, 'n': 4, 'z': 5, 'dd': 6,
-           'ff': 7, 'o': 8},
-           {},
-           {'t': 0, 'f': 1},
-           {'t': 0, 'f': 1},
-           {},
-           {'t': 0, 'f': 1},
-           {'g': 0, 'p': 1, 's': 2},
-           {},
-           {},
-           {'+': 0, '-': 1}]
-# Set up attribute_type vector
-attribute_type = []
-for line in mapping:
-    if line != {}:
-        attribute_type.append(len(line))
-    else:
-        attribute_type.append(-1)
+    '''
+    attribute_type defines the number of possible types a feature may take. If
+    a continuous variable is used for the feature, -1 is the value returned. A
+    dataset with 4 features, the last being the class variable, and the first 2
+    being nominal variables with 3 and 4 possible combinations respectively,
+    and the 3rd variable being continous, the system would take the following
+    form attribute_type = [3, 4, -1, 2]
+    '''
+    attribute_type = []
+    for line in mapping:
+        if line != {}:
+            attribute_type.append(len(line))
+        else:
+            attribute_type.append(-1)
+    return filename, ndtype, mapping, attribute_type
 # ----------------------------------------------------------------------------
 if __name__ == "__main__":
-    # test = np.array([np.nan])
-    # test2 = np.array(['?'])
-    # print np.isnan(test2)
-    # print np.isnan(test)
-    # test_mapData()
-    # data = np.genfromtxt('records.txt', dtype=ndtype, delimiter=',')
-    # print data[0]
-    # test = np.array(list(data[0]), dtype=ndtype)
-    # print test.shape
-    # print test
-    # print mapping[3]['u']
-    print np.array(attribute_type)
-    array = test_loadData()
+    filename, ndtype, mapping, attribute_type = setup_task_1()
+    array = loadData(filename, ndtype, mapping, attribute_type)
     splitRatio = 0.8
-    train_data, test_data = splitDataSets(array,splitRatio)
-    # array = np.genfromtxt('records.txt', dtype=ndtype, delimiter=',')
-    # print [row[1] for row in fullArray],
+    train_data, test_data = splitDataSets(array, splitRatio)
