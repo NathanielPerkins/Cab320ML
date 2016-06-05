@@ -3,6 +3,9 @@ import math
 
 
 def test_loadData():
+    '''
+    Helper function for testing loadData. Not a required function for operation
+    '''
     filename = 'records.txt'
     ndtype = [('A1', 'S1'), ('A2', 'f8'), ('A3', 'f8'), ('A4', 'S1'),
               ('A5', 'S2'),
@@ -34,16 +37,19 @@ def test_loadData():
             attribute_type.append(len(line))
         else:
             attribute_type.append(-1)
-    # attribute_type = np.array(attribute_type)
     return np.array(loadData(filename, ndtype, mapping, attribute_type))
 
 
 def loadData(filename, ndtype, mapping, attribute_type):
     '''
     Loads in the data, performing all mapping and replacement of missing
-    data. Returns the full array of processed data in numpy form.
+    data. Returns the full array of processed data in numpy form. If data
+    is missing, it maps to the following
+    Missing string    -> '?'
+    Missing continous -> NaN
     '''
     data = np.genfromtxt(filename, dtype=ndtype, delimiter=',')
+    # convert to list to itemize the lines of data
     data = [list(line) for line in data]
     averages = getAverages(data, mapping, attribute_type)
     return np.array(mapData(mapping, data, averages))
@@ -52,7 +58,7 @@ def loadData(filename, ndtype, mapping, attribute_type):
 def test_mapData():
     '''
     Tests the mapData function for accuracy with expected results given a
-    known set of inputs
+    known set of inputs. This is not a required function for operation.
     '''
     # partial mapping partial unknown
     test1D = [['?', 2, '?', 'zz'], ['a', '?', 4.2, '?']]
@@ -104,10 +110,10 @@ def mapData(mapping, data, averages):
     for row in data:
         for i in xrange(len(row)):
             try:
-                if(np.isnan(row[i])):  # continuous (?)
+                if(np.isnan(row[i])):  # continuous -> NaN when importing data
                     row[i] = averages[i]
             except:
-                if row[i] == '?':  # discrete (?)
+                if row[i] == '?':  # discrete -> '?' when importing data
                     row[i] = averages[i]
                     continue  # continues through for loop if it was a (?)
             if(mapping[i] != {}):
@@ -158,8 +164,8 @@ def getAverages(data, mapping, attribute_type):
     assert type(y) is int
     assert y == len(mapping)
     for i in xrange(y):  # for every row element
-        count = 0.0  # used for continous variable
-        aveC = 0  # used for continious variable
+        count = 0.0  # used for continuous variable
+        aveC = 0  # used for continuous variable
         currentAve = [0 for a in mapping[i]]
         for j in xrange(x):  # get average of column i of data
             if attribute_type[i] == -1:  # -1 indicates continuous variable

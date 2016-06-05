@@ -29,3 +29,9 @@ task_2:
 
 
 task_3:
+
+Decision tree not fully functional. No recursive based algorithm has been
+implemented.
+
+Functions to calculate entropy, data entropy, conditional entropy and
+information gain have been implemented. 
