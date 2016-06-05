@@ -198,10 +198,5 @@ if __name__ == "__main__":
     print "\nAccuracy of Training Data Classification:",train_accuracy
     print "Error of Training Data Classification:",100-train_accuracy
     
-##    mapping = [{}, {'+': 0, '-': 1}] 
-##    summaries = ({'Length':1, 'Statistics':[{"Mean":1, "StdDev":0.5}]},
-##                 {'Length':1, 'Statistics':[{"Mean":20, "StdDev":5.0}]})
-##    inputVector = [[1.1, '?']]   
-##    p = getProbabilities(inputVector, summaries)
     
     
