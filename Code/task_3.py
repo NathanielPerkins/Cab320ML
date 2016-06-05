@@ -9,6 +9,7 @@ Entropy Calcualtion check challenge 2 in week 12 prac
 import math  # will need for log and entropy
 
 
+
 def testFullDataEntropy():
     data1 = [[1, 2, 0], [1, 2, 1], [1, 3, 0]]
     attribute_types1 = [1, 2, 2]
@@ -23,7 +24,22 @@ def testFullDataEntropy():
 
 
 def entropy(x, total):
-    return -float(x)/(total)*math.log(float(x)/total)
+    if x==0:
+        return 0
+    else:
+        return -float(x)/(total)*math.log(float(x)/total,2)
+
+#yes, no for particular attribute value
+def E(row):
+    total = sum(row)
+    e_value = 0
+    for value in row:
+        e_value+=entropy(value,total)
+    return e_value
+
+#yes, no for all attribute's values
+def P(valueCount,totalAttributeCount):
+    return float(valueCount)/float(totalAttributeCount)
 
 
 def fullDataEntropy(data, attribute_types):
@@ -44,4 +60,103 @@ def fullDataEntropy(data, attribute_types):
         Hp += entropy(P[x], total)
     return Hp
 
-testFullDataEntropy()
+# Sorts data into useable form
+def conditionalSummary(attribute,dataset):
+    summary = []
+    conditionalSet = zip(zip(*dataset)[attribute],zip(*dataset)[-1])
+    attributeArray = splitAttribute(conditionalSet)
+    for i in range(len(attributeArray)):
+        temp = []
+        values = zip(*attributeArray[i])[-1]
+        temp.append(values.count(0))
+        temp.append(values.count(1))
+        summary.append(temp)
+    return summary
+        
+
+# Split a dataset pair (2 columns) by the number of unique attributes
+def splitAttribute(dataset):
+    attributeSet = zip(*dataset)[0]
+    uniqueAttributes = list(set(attributeSet))
+    numUnique = len(set(attributeSet))
+
+    final = []
+    for i in range(numUnique):
+        temp = []
+        for row in dataset:
+            if row[0] == uniqueAttributes[i]:
+                temp.append(row)
+        final.append(temp)
+    return final
+
+def splitByClass(dataset):
+    '''
+    Splits the dataset by its class variables.
+    Returns a tuple of the two split datasets.
+    '''
+    class0 = []
+    class1 = []
+    for row in dataset:
+        if row[-1] == 0:
+            class0.append(row)
+        elif row[-1] == 1:
+            class1.append(row)
+    return tuple((class0,class1))
+
+def conditionalEntropy(dataset):
+    ce = 0 #conditional Entropy
+    totalAtt = sum([sum(row) for row in dataset])
+    for row in dataset:
+        ce += P(sum(row),totalAtt)*E(row)
+    return ce
+
+# Information Gain for given attribute
+def gain(attribute, dataset):
+    conditionalSet = zip(zip(*dataset)[attribute],zip(*dataset)[-1])
+
+    classValues = [sum(zip(*conditionalSet)[0]),sum(zip(*conditionalSet)[1])]
+    ce = conditionalEntropy(dataset)
+    return E(classValues)-ce
+    
+
+myData = [[0,0,0],
+          [1,0,1],
+          [0,0,0],
+          [0,0,0],
+          [0,1,1],
+          [1,0,0],
+          [0,1,0],
+          [0,1,1],
+          [1,0,0],
+          [1,0,0]]
+
+theirData = [[0,1],
+             [0,1],
+             [0,1],
+             [0,0],
+             [0,0],
+             [1,1],
+             [1,1],
+             [1,1],
+             [1,1],
+             [2,1],
+             [2,1],
+             [2,0],
+             [2,0],
+             [2,0]]
+
+#testFullDataEntropy()
+#data = [[3,2],[4,0],[2,3]]
+data = [[3,1],[4,2]]
+
+ce1 = conditionalEntropy(data)
+
+print ce1
+
+sortedData = conditionalSummary(1,myData)
+print sortedData
+
+ce2 = conditionalEntropy(sortedData)
+print ce2
+
+print gain(0,sortedData)
